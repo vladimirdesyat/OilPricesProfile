@@ -1,0 +1,112 @@
+﻿@page
+@model OilPricesProfile.Pages.Account.ProfileModel
+@using Microsoft.AspNetCore.Identity
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<h1>Profile Page</h1>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <p>Welcome, @User.Identity.Name!</p>
+    <p>Email: @Model.Email</p>
+    <!-- Add buttons for authenticated users -->
+    <form method="post" asp-page-handler="LoadData">
+        <button type="submit" class="btn btn-primary">Load Data</button>
+    </form>
+
+    <form method="post" asp-page-handler="DisplayPrices">
+        <button type="submit" class="btn btn-success">Display Prices</button>
+    </form>
+
+    @if (Model.DisplayPriceTable)
+    {
+        <h2>Prices</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>OilDepotId</th>
+                    <th>PetroleumProductId</th>
+                    <th>Date</th>
+                    <th>Min Price Per Ton (Including VAT)</th>
+                    <th>Max Price Per Ton (Including VAT)</th>
+                    <th>Weighted Average Price Per Ton (Including VAT)</th>
+                    <th>Weighted Average Index Per Ton (Including VAT)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var price in Model.Prices)
+                {
+                    <tr>                        
+                        <td>@price.OilDepotId</td>
+                        <td>@price.PetroleumProductId</td>
+                        <td>@price.Date</td>
+                        <td>@price.MinPricePerTonInclVat</td>
+                        <td>@price.MaxPricePerTonInclVat</td>
+                        <td>@price.WeightedAveragePricePerTonInclVat</td>
+                        <td>@price.WeightedAverageIndexPerTonInclVat</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <form method="post" asp-page-handler="MaximumPrices">
+        <button type="submit" class="btn btn-info">Maximum Prices</button>
+    </form>
+
+    <h2>Prices Sorted by Maximum Price</h2>
+    @if (Model.SortedPrices != null && Model.SortedPrices.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>OilDepotId</th>
+                    <th>PetroleumProductId</th>
+                    <th>Date</th>
+                    <th>Min Price Per Ton (Including VAT)</th>
+                    <th>Max Price Per Ton (Including VAT)</th>
+                    <th>Weighted Average Price Per Ton (Including VAT)</th>
+                    <th>Weighted Average Index Per Ton (Including VAT)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var price in Model.SortedPrices)
+                {
+                    <tr>
+                        <td>@price.OilDepotId</td>
+                        <td>@price.PetroleumProductId</td>
+                        <td>@price.Date</td>
+                        <td>@price.MinPricePerTonInclVat</td>
+                        <td>@price.MaxPricePerTonInclVat</td>
+                        <td>@price.WeightedAveragePricePerTonInclVat</td>
+                        <td>@price.WeightedAverageIndexPerTonInclVat</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No price data available.</p>
+    }
+}
+else
+{
+    <p>You need to <a asp-area="Identity" asp-page="/Account/Login">login</a> to access your profile.</p>
+}
+
+<script>
+    function togglePricesTable() {
+        var pricesTable = document.getElementById("pricesTable");
+        var displayPricesForm = document.getElementById("displayPricesForm");
+
+        if (pricesTable.style.display === "none") {
+            pricesTable.style.display = "block";
+            displayPricesForm.innerHTML = "Hide Prices";
+        } else {
+            pricesTable.style.display = "none";
+            displayPricesForm.innerHTML = "Display Prices";
+        }
+    }
+</script>

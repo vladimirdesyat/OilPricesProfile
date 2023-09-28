@@ -1,0 +1,39 @@
+﻿@page
+@model LoginModel
+
+<h1>Login</h1>
+<div class="row">
+    <div class="col-md-4">
+        <!-- Add the login form here -->
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" class="form-control" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.Password"></label>
+                <input asp-for="Input.Password" class="form-control" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+
+        <div class="form-group">
+            <p>
+                <a asp-page="/Account/ForgotPassword">Forgot your password?</a>
+            </p>
+            <p>
+                <a asp-page="/Account/Register">Register as a new user</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
