@@ -12,7 +12,7 @@ using OilPricesProfile.Data.Context;
 namespace OilPricesProfile.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230928110436_InitialCreate")]
+    [Migration("20230929082349_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

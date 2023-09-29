@@ -38,7 +38,7 @@
             <tbody>
                 @foreach (var price in Model.Prices)
                 {
-                    <tr>                        
+                    <tr>
                         <td>@price.OilDepotId</td>
                         <td>@price.PetroleumProductId</td>
                         <td>@price.Date</td>
@@ -55,9 +55,10 @@
         <button type="submit" class="btn btn-info">Maximum Prices</button>
     </form>
 
-    <h2>Prices Sorted by Maximum Price</h2>
+    
     @if (Model.SortedPrices != null && Model.SortedPrices.Any())
     {
+    <h2>Prices Sorted by Maximum Price</h2>
         <table class="table">
             <thead>
                 <tr>
@@ -85,10 +86,6 @@
                 }
             </tbody>
         </table>
-    }
-    else
-    {
-        <p>No price data available.</p>
     }
 }
 else

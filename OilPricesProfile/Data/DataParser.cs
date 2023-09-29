@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Threading.Tasks.Dataflow;
 using HtmlAgilityPack;
 using OilPricesProfile.Data.Context;
 
@@ -50,122 +49,23 @@ namespace OilPricesProfile.Data
                     {
                         var dataTable = new DataTable();
 
-                        var rows = table.Descendants("tr")
-                                .Skip(1) // Skip the header row
-                                .Select(tr => tr.Elements("td")
-                                .Where((num, index) => index != 1 && index != 2)
-                                .Select(td => td.InnerText.Trim())
-                                .ToArray())
-                                .ToList();
+                        var rows = ParseTableRows(table);
 
-                        foreach(var c in rows)
-                        {
-                            Console.WriteLine(string.Join("", c));
-                        }
-
-
-                        // Extract the h1 element with class "less"
-                        var h1Element = web.DocumentNode.SelectSingleNode("//h1[@class='less']");
-                        if (h1Element != null)
-                        {
-                            // Check if the h1 element's inner text is in the dictionary
-                            var h1InnerText = h1Element.InnerText.Trim();
-
-                            foreach (var dictValue in depotsAndPetroleum)
-                            {
-                                if (h1InnerText.Contains(dictValue))
-                                {
-                                    // 'dictValue' is present in 'longerText'
-                                    // Console.WriteLine($"Found: {dictValue}");
-                                    dataTable.Columns.Add(dictValue);
-                                }
-                            }
-                        }
-
-                        Console.WriteLine($"DataTable column count1: {dataTable.Columns.Count}");
+                        AddColumnsFromH1(web, dataTable, depotsAndPetroleum);
 
                         SortAndMatch(dataTable);
 
-                        Console.WriteLine($"DataTable column count2: {dataTable.Columns.Count}");
+                        dataTable = CreateDataTable();
 
-                        dataTable.Columns.Add("Date", typeof(DateTime));
-                        dataTable.Columns.Add("MinPricePerTonInclVat", typeof(double));
-                        dataTable.Columns.Add("MaxPricePerTonInclVat", typeof(double));
-                        dataTable.Columns.Add("WeightedAveragePricePerTonInclVat", typeof(double));
-                        dataTable.Columns.Add("WeightedAverageIndexPerTonInclVat", typeof(double));
+                        PopulateDataTable(dataTable, rows);
 
-                        Console.WriteLine(dataTable.Columns.Count);
+                        AddAndSetColumnOrdinals(dataTable);
 
-                        foreach (var row in rows)
-                        {
-                            var newRow = dataTable.NewRow();
+                        var priceList = ConvertDataTableToPriceList(dataTable);
 
-                            for (int i = 0; i < row.Length; i++)
-                            {
-                                if (string.IsNullOrWhiteSpace(row[i]))
-                                {
-                                    // If the column is of a reference type (e.g., string), set it to null
-                                    if (dataTable.Columns[i].DataType == typeof(string))
-                                    {
-                                        newRow[i] = null;
-                                    }
-                                    else
-                                    {
-                                        // If the column is of a value type (e.g., int, double), set it to the default value
-                                        newRow[i] = Activator.CreateInstance(dataTable.Columns[i].DataType);
-                                    }
-                                }
-                                else
-                                {
-                                    newRow[i] = row[i];
-                                }
-                            }                           
+                        ClearDataTable(dataTable);
 
-                            dataTable.Rows.Add(newRow);
-                        }
-
-                        var OilDepotId = new DataColumn("OilDepotId", typeof(int));
-
-                        var PetroleumProductId = new DataColumn("PetroleumProductId", typeof(int));
-
-                        dataTable.Columns.Add("OilDepotId", typeof(int));
-                        dataTable.Columns.Add("PetroleumProductId", typeof(int));
-
-                        dataTable.Columns["OilDepotId"].SetOrdinal(0);
-                        dataTable.Columns["PetroleumProductId"].SetOrdinal(1);
-
-                        for (int i = 0; i < dataTable.Rows.Count; i++)
-                        {
-                            dataTable.Rows[i]["OilDepotId"] = CreateOrUpdateOilDepot(oilDepotMatch);
-                            dataTable.Rows[i]["PetroleumProductId"] = CreateOrUpdatePetroleumProduct(petroleumMatch);
-                        }
-
-                        var priceList = new List<Price>();
-
-                        foreach (DataRow row in dataTable.Rows)
-                        {
-                            Price price = new Price
-                            {
-                                OilDepotId = Convert.ToInt32(row["OilDepotId"]),
-                                PetroleumProductId = Convert.ToInt32(row["PetroleumProductId"]),
-                                Date = Convert.ToDateTime(row["Date"]),
-                                MinPricePerTonInclVat = Convert.ToDouble(row["MinPricePerTonInclVat"]),
-                                MaxPricePerTonInclVat = Convert.ToDouble(row["MaxPricePerTonInclVat"]),
-                                WeightedAveragePricePerTonInclVat = Convert.ToDouble(row["WeightedAveragePricePerTonInclVat"]),
-                                WeightedAverageIndexPerTonInclVat = Convert.ToDouble(row["WeightedAverageIndexPerTonInclVat"]),                                
-                            };
-
-                            priceList.Add(price);
-                        }
-
-                        dataTable.AsEnumerable().ToList().ForEach(m => m.Delete());
-
-                        foreach (var price in priceList)
-                        {
-                            _dbContext.Prices.Add(price);
-                        }
-
-                        _dbContext.SaveChanges();
+                        InsertPricesIntoDatabase(priceList);
                     }
                 }
             }
@@ -176,11 +76,139 @@ namespace OilPricesProfile.Data
             }
         }
 
-        public void SortAndMatch(DataTable dataTable)
+        private void AddColumnsFromH1(HtmlDocument web, DataTable dataTable, List<string> depotsAndPetroleum)
+        {
+            // Extract the h1 element with class "less"
+            var h1Element = web.DocumentNode.SelectSingleNode("//h1[@class='less']");
+
+            if (h1Element != null)
+            {
+                // Check if the h1 element's inner text is in the dictionary
+                var h1InnerText = h1Element.InnerText.Trim();
+
+                foreach (var dictValue in depotsAndPetroleum)
+                {
+                    if (h1InnerText.Contains(dictValue))
+                    {
+                        dataTable.Columns.Add(dictValue);
+                    }
+                }
+            }
+        }
+
+        private DataTable CreateDataTable()
+        {
+            var dataTable = new DataTable();
+            dataTable.Columns.Add("Date", typeof(DateTime));
+            dataTable.Columns.Add("MinPricePerTonInclVat", typeof(double));
+            dataTable.Columns.Add("MaxPricePerTonInclVat", typeof(double));
+            dataTable.Columns.Add("WeightedAveragePricePerTonInclVat", typeof(double));
+            dataTable.Columns.Add("WeightedAverageIndexPerTonInclVat", typeof(double));
+            return dataTable;
+        }
+
+        private List<string[]> ParseTableRows(HtmlNode table)
+        {
+            return table.Descendants("tr")
+                .Skip(1) // Skip the header row
+                .Select(tr => tr.Elements("td")
+                    .Where((num, index) => index != 1 && index != 2)
+                    .Select(td => td.InnerText.Trim())
+                    .ToArray())
+                    .ToList();
+        }
+
+        private void PopulateDataTable(DataTable dataTable, List<string[]> rows)
+        {
+            foreach (var row in rows)
+            {
+                var newRow = dataTable.NewRow();
+
+                for (int i = 0; i < row.Length; i++)
+                {
+                    if (string.IsNullOrWhiteSpace(row[i]))
+                    {
+                        // If the column is of a reference type (e.g., string), set it to null
+                        if (dataTable.Columns[i].DataType == typeof(string))
+                        {
+                            newRow[i] = null;
+                        }
+                        else
+                        {
+                            // If the column is of a value type (e.g., int, double), set it to the default value
+                            newRow[i] = Activator.CreateInstance(dataTable.Columns[i].DataType);
+                        }
+                    }
+                    else
+                    {
+                        newRow[i] = row[i];
+                    }
+                }
+
+                dataTable.Rows.Add(newRow);
+            }
+        }
+
+        private void AddAndSetColumnOrdinals(DataTable dataTable)
+        {
+            // Create the DataColumn for OilDepotId
+            var oilDepotIdColumn = new DataColumn("OilDepotId", typeof(int));
+
+            // Create the DataColumn for PetroleumProductId
+            var petroleumProductIdColumn = new DataColumn("PetroleumProductId", typeof(int));
+
+            // Add the OilDepotId and PetroleumProductId columns to the DataTable
+            dataTable.Columns.Add(oilDepotIdColumn);
+            dataTable.Columns.Add(petroleumProductIdColumn);
+
+            // Set the ordinal positions of OilDepotId and PetroleumProductId columns
+            dataTable.Columns["OilDepotId"].SetOrdinal(0);
+            dataTable.Columns["PetroleumProductId"].SetOrdinal(1);
+
+            for (int i = 0; i < dataTable.Rows.Count; i++)
+            {
+                dataTable.Rows[i]["OilDepotId"] = CreateOrUpdateOilDepot(oilDepotMatch);
+                dataTable.Rows[i]["PetroleumProductId"] = CreateOrUpdatePetroleumProduct(petroleumMatch);
+            }
+        }
+
+        private List<Price> ConvertDataTableToPriceList(DataTable dataTable)
+        {
+            var priceList = new List<Price>();
+            foreach (DataRow row in dataTable.Rows)
+            {
+                Price price = new Price
+                {
+                    OilDepotId = Convert.ToInt32(row["OilDepotId"]),
+                    PetroleumProductId = Convert.ToInt32(row["PetroleumProductId"]),
+                    Date = Convert.ToDateTime(row["Date"]),
+                    MinPricePerTonInclVat = Convert.ToDouble(row["MinPricePerTonInclVat"]),
+                    MaxPricePerTonInclVat = Convert.ToDouble(row["MaxPricePerTonInclVat"]),
+                    WeightedAveragePricePerTonInclVat = Convert.ToDouble(row["WeightedAveragePricePerTonInclVat"]),
+                    WeightedAverageIndexPerTonInclVat = Convert.ToDouble(row["WeightedAverageIndexPerTonInclVat"]),
+                };
+                priceList.Add(price);
+            }
+            return priceList;
+        }
+
+        private void ClearDataTable(DataTable dataTable)
+        {
+            dataTable.AsEnumerable().ToList().ForEach(m => m.Delete());
+        }
+
+        private void InsertPricesIntoDatabase(List<Price> priceList)
+        {
+            foreach (var price in priceList)
+            {
+                _dbContext.Prices.Add(price);
+            }
+            _dbContext.SaveChanges();
+        }
+
+        private void SortAndMatch(DataTable dataTable)
         {
             var OilandPetroleum = dataTable.Columns[0].ColumnName;
-
-            Console.WriteLine(OilandPetroleum);
 
             var oilDepot = new List<string>()
             {
@@ -195,7 +223,7 @@ namespace OilPricesProfile.Data
             };
 
             var petroleumProduct = new List<string>()
-            {                
+            {
                 "пропан-бутан автомобильный",
                 "конденсат газовый стабильный (1 гр.)",
                 "конденсат газовый стабильный",
