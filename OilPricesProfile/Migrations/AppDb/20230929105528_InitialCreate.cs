@@ -44,10 +44,10 @@ namespace OilPricesProfile.Migrations.AppDb
                     OilDepotId = table.Column<int>(type: "int", nullable: false),
                     PetroleumProductId = table.Column<int>(type: "int", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    MinPricePerTonInclVat = table.Column<double>(type: "float", nullable: true),
-                    MaxPricePerTonInclVat = table.Column<double>(type: "float", nullable: true),
-                    WeightedAveragePricePerTonInclVat = table.Column<double>(type: "float", nullable: true),
-                    WeightedAverageIndexPerTonInclVat = table.Column<double>(type: "float", nullable: true)
+                    MinPricePerLiterInclVat = table.Column<double>(type: "float", nullable: true),
+                    MaxPricePerLiterInclVat = table.Column<double>(type: "float", nullable: true),
+                    WeightedAveragePricePerLiterInclVat = table.Column<double>(type: "float", nullable: true),
+                    WeightedAverageIndexPerLiterInclVat = table.Column<double>(type: "float", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -182,10 +182,11 @@ namespace OilPricesProfile.Data
                     OilDepotId = Convert.ToInt32(row["OilDepotId"]),
                     PetroleumProductId = Convert.ToInt32(row["PetroleumProductId"]),
                     Date = Convert.ToDateTime(row["Date"]),
-                    MinPricePerTonInclVat = Convert.ToDouble(row["MinPricePerTonInclVat"]),
-                    MaxPricePerTonInclVat = Convert.ToDouble(row["MaxPricePerTonInclVat"]),
-                    WeightedAveragePricePerTonInclVat = Convert.ToDouble(row["WeightedAveragePricePerTonInclVat"]),
-                    WeightedAverageIndexPerTonInclVat = Convert.ToDouble(row["WeightedAverageIndexPerTonInclVat"]),
+                    MinPricePerLiterInclVat = row["MinPricePerTonInclVat"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["MinPricePerTonInclVat"]) / 1000.0,
+                    MaxPricePerLiterInclVat = row["MaxPricePerTonInclVat"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["MaxPricePerTonInclVat"]) / 1000.0,
+                    WeightedAveragePricePerLiterInclVat = row["WeightedAveragePricePerTonInclVat"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["WeightedAveragePricePerTonInclVat"]) / 1000.0,
+                    WeightedAverageIndexPerLiterInclVat = row["WeightedAverageIndexPerTonInclVat"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["WeightedAverageIndexPerTonInclVat"]) / 1000.0,
+
                 };
                 priceList.Add(price);
             }

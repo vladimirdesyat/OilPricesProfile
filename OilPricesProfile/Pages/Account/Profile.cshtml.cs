@@ -85,7 +85,11 @@ namespace OilPricesProfile.Pages.Account
             Prices = _dbContext.Prices
                 .Include(p => p.PetroleumProduct)
                 .Include(p => p.OilDepot)
+                .OrderBy(p => p.PetroleumProductId) // Sort by PetroleumProductId
+                .ThenBy(p => p.OilDepotId) // Then, sort by OilDepotId
+                .ThenBy(p => p.Date.Date) // Finally, sort by Date
                 .ToList();
+
 
             DisplayPriceTable = true;
 
@@ -94,7 +98,13 @@ namespace OilPricesProfile.Pages.Account
 
         public IActionResult OnPostMaximumPrices()
         {
-            SortedPrices = _dbContext.Prices.OrderByDescending(p => p.MaxPricePerTonInclVat).ToList();
+            SortedPrices = _dbContext.Prices
+                .Where(p => p.MaxPricePerLiterInclVat.HasValue && p.MaxPricePerLiterInclVat.Value != 0)
+                .OrderBy(p => p.MaxPricePerLiterInclVat)
+                .ThenByDescending(p => p.MaxPricePerLiterInclVat)
+                .ThenBy(p => p.Date.Date)
+                .ToList();
+
 
             return Page();
         }

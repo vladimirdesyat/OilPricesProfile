@@ -10,78 +10,111 @@
 @if (User.Identity.IsAuthenticated)
 {
     <p>Welcome, @User.Identity.Name!</p>
-    <p>Email: @Model.Email</p>
+
     <!-- Add buttons for authenticated users -->
+    <div class="filter-container">
     <form method="post" asp-page-handler="LoadData">
-        <button type="submit" class="btn btn-primary">Load Data</button>
+            <button type="submit" class="btn btn-primary" onclick="handleButtonClick()">Load Data</button>
     </form>
 
     <form method="post" asp-page-handler="DisplayPrices">
-        <button type="submit" class="btn btn-success">Display Prices</button>
+            <button type="submit" class="btn btn-success" onclick="handleButtonClick()">Display Prices</button>
     </form>
 
+    <form method="post" asp-page-handler="MaximumPrices">
+            <button type="submit" class="btn btn-info" onclick="handleButtonClick()">Maximum Prices</button>
+    </form>
+    </div>
     @if (Model.DisplayPriceTable)
-    {
+    {        
         <h2>Prices</h2>
+        <!-- Add the filter dropdown here -->
+        <label for="productIdFilter">Filter by PetroluemProduct ID:</label>
+        <select id="productIdFilter">
+            <option value="">All</option>
+            @foreach (var productId in Model.Prices
+           .Select(p => p.PetroleumProductId)
+           .Distinct()
+           .OrderBy(productId => productId))
+            {
+                <option value="@productId">@productId</option>
+            }
+
+            <!-- Add more options as needed -->
+        </select>
+        <button type="button" class="btn btn-primary" onclick="applyFilter()">Apply Filter</button>
+        <button type="button" class="btn btn-secondary" onclick="resetFilter()">Reset Filter</button>
         <table class="table">
             <thead>
                 <tr>
                     <th>OilDepotId</th>
                     <th>PetroleumProductId</th>
                     <th>Date</th>
-                    <th>Min Price Per Ton (Including VAT)</th>
-                    <th>Max Price Per Ton (Including VAT)</th>
-                    <th>Weighted Average Price Per Ton (Including VAT)</th>
-                    <th>Weighted Average Index Per Ton (Including VAT)</th>
+                    <th>Min Price Per Liter (Including VAT)</th>
+                    <th>Max Price Per Liter (Including VAT)</th>
+                    <th>Weighted Average Price Per Liter (Including VAT)</th>
+                    <th>Weighted Average Index Per Liter (Including VAT)</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="pricesTable">
                 @foreach (var price in Model.Prices)
                 {
                     <tr>
                         <td>@price.OilDepotId</td>
                         <td>@price.PetroleumProductId</td>
                         <td>@price.Date</td>
-                        <td>@price.MinPricePerTonInclVat</td>
-                        <td>@price.MaxPricePerTonInclVat</td>
-                        <td>@price.WeightedAveragePricePerTonInclVat</td>
-                        <td>@price.WeightedAverageIndexPerTonInclVat</td>
+                        <td>@price.MinPricePerLiterInclVat</td>
+                        <td>@price.MaxPricePerLiterInclVat</td>
+                        <td>@price.WeightedAveragePricePerLiterInclVat</td>
+                        <td>@price.WeightedAverageIndexPerLiterInclVat</td>
                     </tr>
                 }
             </tbody>
         </table>
     }
-    <form method="post" asp-page-handler="MaximumPrices">
-        <button type="submit" class="btn btn-info">Maximum Prices</button>
-    </form>
-
-    
+        
     @if (Model.SortedPrices != null && Model.SortedPrices.Any())
     {
     <h2>Prices Sorted by Maximum Price</h2>
+        <!-- Add the filter dropdown for maximum prices table here -->
+        <label for="maxPriceProductIdFilter">Filter by PetroluemProduct ID:</label>
+        <select id="maxPriceProductIdFilter">
+            <option value="">All</option>
+            @foreach (var productId in Model.SortedPrices
+           .Select(p => p.PetroleumProductId)
+           .Distinct()
+           .OrderBy(productId => productId))
+            {
+                <option value="@productId">@productId</option>
+            }
+
+        </select>
+        <button type="button" class="btn btn-primary" onclick="applyMaxPriceFilter()">Apply Filter</button>
+        <button type="button" class="btn btn-secondary" onclick="resetMaxPriceFilter()">Reset Filter</button>
+
         <table class="table">
             <thead>
                 <tr>
                     <th>OilDepotId</th>
                     <th>PetroleumProductId</th>
                     <th>Date</th>
-                    <th>Min Price Per Ton (Including VAT)</th>
-                    <th>Max Price Per Ton (Including VAT)</th>
-                    <th>Weighted Average Price Per Ton (Including VAT)</th>
-                    <th>Weighted Average Index Per Ton (Including VAT)</th>
+                    <th>Min Price Per Liter (Including VAT)</th>
+                    <th>Max Price Per Liter (Including VAT)</th>
+                    <th>Weighted Average Price Per Liter (Including VAT)</th>
+                    <th>Weighted Average Index Per Liter (Including VAT)</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="maxPricesTable">
                 @foreach (var price in Model.SortedPrices)
                 {
                     <tr>
                         <td>@price.OilDepotId</td>
                         <td>@price.PetroleumProductId</td>
                         <td>@price.Date</td>
-                        <td>@price.MinPricePerTonInclVat</td>
-                        <td>@price.MaxPricePerTonInclVat</td>
-                        <td>@price.WeightedAveragePricePerTonInclVat</td>
-                        <td>@price.WeightedAverageIndexPerTonInclVat</td>
+                        <td>@price.MinPricePerLiterInclVat</td>
+                        <td>@price.MaxPricePerLiterInclVat</td>
+                        <td>@price.WeightedAveragePricePerLiterInclVat</td>
+                        <td>@price.WeightedAverageIndexPerLiterInclVat</td>
                     </tr>
                 }
             </tbody>
@@ -93,17 +126,85 @@ else
     <p>You need to <a asp-area="Identity" asp-page="/Account/Login">login</a> to access your profile.</p>
 }
 
-<script>
-    function togglePricesTable() {
-        var pricesTable = document.getElementById("pricesTable");
-        var displayPricesForm = document.getElementById("displayPricesForm");
+<style>
+    /* CSS to style the filter container */
+    .filter-container {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Adjust the gap as needed */
+    }
 
-        if (pricesTable.style.display === "none") {
-            pricesTable.style.display = "block";
-            displayPricesForm.innerHTML = "Hide Prices";
-        } else {
-            pricesTable.style.display = "none";
-            displayPricesForm.innerHTML = "Display Prices";
+    /* CSS to style the tables and cells */
+    table.table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table.table th,
+    table.table td {
+        border: 1px solid #ccc; /* Add borders to table cells */
+        padding: 8px; /* Add padding to table cells */
+        text-align: center; /* Center align text in cells */
+    }
+
+    table.table th {
+        background-color: #f2f2f2; /* Set background color for table headers */
+        text-align: center; /* Center align text in table headers */
+    }
+
+    table.table-striped tbody tr:nth-child(odd) {
+        background-color: #f2f2f2; /* Add a striped background to odd rows */
+    }
+</style>
+
+<script>
+    // Function to apply filter for prices table
+    function applyFilter() {
+        var productIdFilter = document.getElementById("productIdFilter").value;
+        var pricesTable = document.getElementById("pricesTable");
+
+        // Loop through table rows and hide/show based on the filter
+        for (var i = 0; i < pricesTable.rows.length; i++) {
+            var row = pricesTable.rows[i];
+            var productIdCell = row.cells[1]; // Assuming Product ID is in the second column
+
+            if (productIdFilter === "" || productIdCell.textContent === productIdFilter) {
+                row.style.display = ""; // Show the row
+            } else {
+                row.style.display = "none"; // Hide the row
+            }
         }
+    }
+
+    // Function to reset filter and show all rows for prices table
+    function resetFilter() {
+        var productIdFilter = document.getElementById("productIdFilter");
+        productIdFilter.value = ""; // Reset the dropdown selection
+        applyFilter(); // Apply the filter (show all rows)
+    }
+
+    // Function to apply filter for maximum prices table
+    function applyMaxPriceFilter() {
+        var maxPriceProductIdFilter = document.getElementById("maxPriceProductIdFilter").value;
+        var maxPricesTable = document.getElementById("maxPricesTable");
+
+        // Loop through table rows and hide/show based on the filter
+        for (var i = 0; i < maxPricesTable.rows.length; i++) {
+            var row = maxPricesTable.rows[i];
+            var maxProductIdCell = row.cells[1]; // Assuming Product ID is in the second column
+
+            if (maxPriceProductIdFilter === "" || maxProductIdCell.textContent === maxPriceProductIdFilter) {
+                row.style.display = ""; // Show the row
+            } else {
+                row.style.display = "none"; // Hide the row
+            }
+        }
+    }
+
+    // Function to reset filter and show all rows for maximum prices table
+    function resetMaxPriceFilter() {
+        var maxPriceProductIdFilter = document.getElementById("maxPriceProductIdFilter");
+        maxPriceProductIdFilter.value = ""; // Reset the dropdown selection
+        applyMaxPriceFilter(); // Apply the filter (show all rows)
     }
 </script>

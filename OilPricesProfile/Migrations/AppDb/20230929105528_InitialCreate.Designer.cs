@@ -12,7 +12,7 @@ using OilPricesProfile.Data.Context;
 namespace OilPricesProfile.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230929082349_InitialCreate")]
+    [Migration("20230929105528_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,10 +71,10 @@ namespace OilPricesProfile.Migrations.AppDb
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<double?>("MaxPricePerTonInclVat")
+                    b.Property<double?>("MaxPricePerLiterInclVat")
                         .HasColumnType("float");
 
-                    b.Property<double?>("MinPricePerTonInclVat")
+                    b.Property<double?>("MinPricePerLiterInclVat")
                         .HasColumnType("float");
 
                     b.Property<int>("OilDepotId")
@@ -83,10 +83,10 @@ namespace OilPricesProfile.Migrations.AppDb
                     b.Property<int>("PetroleumProductId")
                         .HasColumnType("int");
 
-                    b.Property<double?>("WeightedAverageIndexPerTonInclVat")
+                    b.Property<double?>("WeightedAverageIndexPerLiterInclVat")
                         .HasColumnType("float");
 
-                    b.Property<double?>("WeightedAveragePricePerTonInclVat")
+                    b.Property<double?>("WeightedAveragePricePerLiterInclVat")
                         .HasColumnType("float");
 
                     b.HasKey("Id");

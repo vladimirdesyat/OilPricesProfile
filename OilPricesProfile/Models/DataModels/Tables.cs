@@ -22,10 +22,10 @@ public class Price
     public int OilDepotId { get; set; } // Foreign key to OilDepot
     public int PetroleumProductId { get; set; } // Foreign key to PetroleumProduct
     public DateTime Date { get; set; }
-    public double? MinPricePerTonInclVat { get; set; }
-    public double? MaxPricePerTonInclVat { get; set; }
-    public double? WeightedAveragePricePerTonInclVat { get; set; }
-    public double? WeightedAverageIndexPerTonInclVat { get; set; }
+    public double? MinPricePerLiterInclVat { get; set; }
+    public double? MaxPricePerLiterInclVat { get; set; }
+    public double? WeightedAveragePricePerLiterInclVat { get; set; }
+    public double? WeightedAverageIndexPerLiterInclVat { get; set; }
     
     public PetroleumProduct PetroleumProduct { get; set; } // Parent reference
     

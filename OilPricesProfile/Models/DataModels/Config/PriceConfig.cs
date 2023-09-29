@@ -11,17 +11,17 @@ namespace OilPricesProfile.Models.DataModels.Config
                .HasColumnName("Дата")
                .HasMaxLength(255); // Optional: You can specify the maximum length for the column
 
-            builder.Property(m => m.MinPricePerTonInclVat)
-                .HasColumnName("Мин. цена,\r\nруб./т вкл. НДС");
+            builder.Property(m => m.MinPricePerLiterInclVat)
+                .HasColumnName("Мин. цена,\r\nруб./л вкл. НДС");
 
-            builder.Property(m => m.MaxPricePerTonInclVat)
-                .HasColumnName("Макс. цена,\r\nруб./т вкл. НДС");
+            builder.Property(m => m.MaxPricePerLiterInclVat)
+                .HasColumnName("Макс. цена,\r\nруб./л вкл. НДС");
 
-            builder.Property(m => m.WeightedAveragePricePerTonInclVat)
-                .HasColumnName("Средневзвешенная цена,\r\nруб./т вкл. НДС");
+            builder.Property(m => m.WeightedAveragePricePerLiterInclVat)
+                .HasColumnName("Средневзвешенная цена,\r\nруб./л вкл. НДС");
 
-            builder.Property(m => m.WeightedAverageIndexPerTonInclVat)
-                .HasColumnName("Средневзвешенный индекс,\r\nруб./т вкл. НДС");
+            builder.Property(m => m.WeightedAverageIndexPerLiterInclVat)
+                .HasColumnName("Средневзвешенный индекс,\r\nруб./л вкл. НДС");
 
             // Other property configurations can be added here...
         }
