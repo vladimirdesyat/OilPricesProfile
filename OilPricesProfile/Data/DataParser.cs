@@ -8,12 +8,14 @@ namespace OilPricesProfile.Data
     {
         private readonly AppDbContext _dbContext;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<DataParser> _logger;
         private string oilDepotMatch;
         private string petroleumMatch;
-        public DataParser(AppDbContext dbContext)
+        public DataParser(AppDbContext dbContext, ILogger<DataParser> logger)
         {
             _dbContext = dbContext;
             _httpClient = new HttpClient();
+            _logger = logger;
         }
 
         public async Task ParseAndStoreWebPageDataAsync(string url)
@@ -72,7 +74,7 @@ namespace OilPricesProfile.Data
             catch (Exception ex)
             {
                 // Handle exceptions (e.g., log the error)
-                Console.WriteLine($"Error: {ex.Message}");
+                _logger.LogError(ex, "An error occurred while parsing and storing web page data.");
             }
         }
 

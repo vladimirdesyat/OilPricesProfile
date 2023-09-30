@@ -18,20 +18,23 @@ namespace OilPricesProfile.Pages.Account
         private readonly DataParser _DataParser;
         private readonly string ggnpLink = "https://ggnpsales.ru/trading-result-petroleum/";
         private readonly int[] ggpnPages = new int[10];
+        private readonly ILogger<ProfileModel> _logger; // Add ILogger
         public List<Price> SortedPrices { get; set; }
         public bool DisplayPriceTable { get; set; } = false;
         public List<Price> Prices { get; set; } = new List<Price>();
         public ProfileModel(
             SignInManager<User> signInManager,
             DataParser dataParser,
-            AppDbContext dbContext
+            AppDbContext dbContext,
+            ILogger<ProfileModel> logger
             )
         {
             _signInManager = signInManager;
             _DataParser = dataParser;
             _dbContext = dbContext;
+            _logger = logger; // Initialize logger
 
-            ggpnPages = new[] { 170, 171, 172, 173, 174, 175, 176, 177, 178, 179 }; // 171,172,173,174,175,176,177,178,179
+            ggpnPages = new[] { 170, 171, 172, 173, 174, 175, 176, 177, 178, 179 }; // 170,171,172,173,174,175,176,177,178,179
         }
         public async Task<IActionResult> OnPostLoadDataAsync()
         {
@@ -51,7 +54,7 @@ namespace OilPricesProfile.Pages.Account
                     {
                         // Handle exceptions (e.g., log the error)
                         // Optionally, you can add error handling here
-                        Console.WriteLine($"Error: {ex.Message}");
+                        _logger.LogError(ex, $"Error loading data from URL: {urlToParse}");
                     }
                     index++;
                 }
@@ -104,7 +107,6 @@ namespace OilPricesProfile.Pages.Account
                 .ThenByDescending(p => p.MaxPricePerLiterInclVat)
                 .ThenBy(p => p.Date.Date)
                 .ToList();
-
 
             return Page();
         }

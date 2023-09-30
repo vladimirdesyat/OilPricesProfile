@@ -12,10 +12,12 @@ namespace OilPricesProfile.Pages
     public class LoginModel : PageModel
     {
         private readonly SignInManager<User> _signInManager;
+        private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<User> signInManager)
+        public LoginModel(SignInManager<User> signInManager, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -37,6 +39,10 @@ namespace OilPricesProfile.Pages
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+
+                    // Log the login error
+                    _logger.LogError("Invalid login attempt.");
+
                     return Page();
                 }
             }

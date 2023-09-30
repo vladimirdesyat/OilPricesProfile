@@ -20,9 +20,6 @@ namespace OilPricesProfile.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // modelBuilder.Entity<User>().HasKey(p => new { p.UserId, p.RoleId });
-            // Configure custom IdentityRole if needed
-            // modelBuilder.Entity<AuthRole>().HasKey(p => new { p.UserId, p.RoleId });
         }
 
     }

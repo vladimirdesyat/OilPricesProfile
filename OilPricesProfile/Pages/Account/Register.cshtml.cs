@@ -10,13 +10,16 @@ namespace OilPricesProfile.Pages
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly ILogger<RegisterModel> _logger; // Add ILogger
 
         public RegisterModel(
             UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            SignInManager<User> signInManager,
+            ILogger<RegisterModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -36,6 +39,9 @@ namespace OilPricesProfile.Pages
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
+
+                    // Log the registration error
+                    _logger.LogError($"Registration Error: {error.Description}");
                 }
             }
             return Page();

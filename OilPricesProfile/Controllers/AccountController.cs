@@ -12,11 +12,13 @@ namespace OilPricesProfile.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         [AllowAnonymous]
@@ -37,6 +39,7 @@ namespace OilPricesProfile.Controllers
 
                 if (result.Succeeded)
                 {
+                    _logger.LogInformation("User logged in."); // Log successful login
                     return RedirectToAction("Profile");
                 }
                 if (result.IsLockedOut)
@@ -46,6 +49,7 @@ namespace OilPricesProfile.Controllers
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    _logger.LogWarning("Invalid login attempt."); // Log invalid login attempt
                 }
             }
 
@@ -62,6 +66,7 @@ namespace OilPricesProfile.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+            _logger.LogInformation("User logged out."); // Log user logout
             return RedirectToAction("Index", "Home");
         }
     }
